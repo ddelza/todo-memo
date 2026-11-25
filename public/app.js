@@ -2,9 +2,9 @@
 // 데이터: Firestore users/{uid}/todos, users/{uid}/memos (실시간 동기화 + 오프라인 캐시)
 // 구글 캘린더: 앱(window.TodoApp)이 휴대폰 캘린더(구글 계정)에 등록. 웹에서 만든 일정은 앱이 열릴 때 등록된다.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithCredential, signOut }
+import { getAuth, connectAuthEmulator, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithCredential, signOut }
   from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, onSnapshot,
+import { initializeFirestore, connectFirestoreEmulator, memoryLocalCache, persistentLocalCache, persistentMultipleTabManager, collection, doc, onSnapshot,
   setDoc, updateDoc, deleteDoc, deleteField } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 const fbApp = initializeApp({
@@ -15,8 +15,10 @@ const fbApp = initializeApp({
   messagingSenderId: '56944721674',
   appId: '1:56944721674:web:79ad5b68b60fb987b144f3',
 });
+const EMU = location.hostname === 'localhost' || location.hostname === '127.0.0.1';   // 로컬 시험: firebase emulators
 const auth = getAuth(fbApp);
-const db = initializeFirestore(fbApp, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+const db = initializeFirestore(fbApp, { localCache: EMU ? memoryLocalCache() : persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+if (EMU) { connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true }); connectFirestoreEmulator(db, '127.0.0.1', 8080); }
 
 const A = window.TodoApp || null;           // 안드로이드 앱 안이면 있음
 if (A) document.body.classList.add('in-app');
