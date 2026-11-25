@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>할일 메모 앱 로그인</title>
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- 안드로이드 앱(WebView)에서는 구글 로그인이 막혀 있어서, 크롬에서 로그인한 뒤 토큰을 앱으로 넘긴다 -->
+<section class="login">
+  <img src="icon-192.png" alt="" class="login-icon">
+  <h1>앱 로그인</h1>
+  <p id="msg" class="muted">아래 버튼으로 구글 계정에 로그인하세요.</p>
+  <button id="go" class="btn primary big">Google 계정으로 로그인</button>
+  <a id="back" class="btn primary big" hidden>앱으로 돌아가기</a>
+</section>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+const app = initializeApp({ apiKey: 'AIzaSyBEzeXqVxzFStT5M_y_yF1TG1Mv-JMcZg0', authDomain: 'my-todo-memo.firebaseapp.com',
+  projectId: 'my-todo-memo', appId: '1:56944721674:web:79ad5b68b60fb987b144f3' });
+const auth = getAuth(app);
+const $ = (s) => document.getElementById(s);
+$('go').onclick = async () => {
+  try {
+    const p = new GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' });
+    const r = await signInWithPopup(auth, p);
+    const cred = GoogleAuthProvider.credentialFromResult(r);
+    const url = 'todomemo://login?t=' + encodeURIComponent(cred.idToken);
+    await signOut(auth);                       // 크롬에는 로그인 상태를 남기지 않음
+    $('msg').textContent = `${r.user.email} 로 로그인했어요.`;
+    $('go').hidden = true; $('back').hidden = false; $('back').href = url;
+    location.href = url;
+  } catch (e) { $('msg').textContent = '로그인 실패: ' + (e.code || e.message); }
+};
+</script>
+</body>
+</html>

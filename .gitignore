@@ -1,0 +1,5 @@
+android/keystore/
+android/build/
+android/out/
+node_modules/
+.firebase/

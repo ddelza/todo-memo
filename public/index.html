@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f6f8">
+<title>할일 메모</title>
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- 로그인 화면 -->
+<section id="login" class="login" hidden>
+  <img src="icon-192.png" alt="" class="login-icon">
+  <h1>할일 메모</h1>
+  <p class="muted">할 일과 메모를 웹과 휴대폰 앱에서 함께 써요.</p>
+  <button id="btnLogin" class="btn primary big">Google 계정으로 로그인</button>
+  <p id="loginMsg" class="muted small"></p>
+  <a class="apk-link web-only" href="https://github.com/ddelza/todo-memo/releases/latest/download/todo-memo.apk">📱 안드로이드 앱(APK) 내려받기</a>
+</section>
+
+<!-- 본 화면 -->
+<section id="main" hidden>
+  <header class="top">
+    <h1>할일 메모</h1>
+    <div class="top-right">
+      <span id="syncState" class="sync" title="동기화 상태"></span>
+      <a class="apk-mini web-only" href="https://github.com/ddelza/todo-memo/releases/latest/download/todo-memo.apk" title="안드로이드 앱 내려받기">📱 앱 받기</a>
+      <button id="btnMenu" class="icon-btn" aria-label="설정">⚙️</button>
+    </div>
+  </header>
+  <nav class="tabs" role="tablist">
+    <button class="tab" data-tab="todo" role="tab">할 일 <b id="cntTodo"></b></button>
+    <button class="tab" data-tab="memo" role="tab">메모 <b id="cntMemo"></b></button>
+    <button class="tab" data-tab="done" role="tab">완료 <b id="cntDone"></b></button>
+  </nav>
+  <main>
+    <div id="view-todo" class="view">
+      <div id="listDeadline"></div>
+      <div id="listNormal"></div>
+      <p id="emptyTodo" class="empty" hidden>할 일이 없어요. 아래 ＋ 버튼으로 추가해 보세요.</p>
+    </div>
+    <div id="view-memo" class="view">
+      <div id="listMemo"></div>
+      <p id="emptyMemo" class="empty" hidden>메모가 없어요.</p>
+    </div>
+    <div id="view-done" class="view">
+      <div id="listDone"></div>
+      <p id="emptyDone" class="empty" hidden>완료한 일이 아직 없어요.</p>
+    </div>
+  </main>
+  <button id="fab" class="fab" aria-label="추가">＋</button>
+</section>
+
+<!-- 할 일 편집 -->
+<div id="sheetTodo" class="sheet" hidden>
+  <div class="sheet-card">
+    <div class="sheet-head">
+      <button class="icon-btn" data-close>✕</button>
+      <h2 id="todoSheetTitle">할 일 추가</h2>
+      <button id="todoSave" class="btn primary">저장</button>
+    </div>
+    <input id="tTitle" class="field title" placeholder="할 일 제목" maxlength="200" autocomplete="off">
+    <div class="seg" role="radiogroup">
+      <button type="button" data-kind="normal">일반 할 일</button>
+      <button type="button" data-kind="deadline">마감 기한 있음</button>
+    </div>
+    <div id="deadlineBox" class="deadline-box">
+      <div class="row">
+        <input id="tDate" type="date" class="field">
+        <label class="chk"><input id="tUseTime" type="checkbox"> 시간 지정</label>
+        <input id="tTime" type="time" class="field" step="300">
+      </div>
+      <p class="muted small" id="calNote">구글 캘린더에도 일정으로 등록돼요. 기한이 지나면 자동으로 완료 처리돼요.</p>
+    </div>
+    <textarea id="tNote" class="field note" placeholder="세부 사항 메모 (선택)"></textarea>
+    <p id="tInfo" class="muted small"></p>
+    <div id="todoActions" class="sheet-actions">
+      <button id="todoDone" class="btn">✔ 완료 처리</button>
+      <button id="todoDelete" class="btn danger">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- 메모 편집 -->
+<div id="sheetMemo" class="sheet" hidden>
+  <div class="sheet-card tall">
+    <div class="sheet-head">
+      <button class="icon-btn" data-close>✕</button>
+      <h2 id="memoSheetTitle">새 메모</h2>
+      <button id="memoSave" class="btn primary">저장</button>
+    </div>
+    <input id="mTitle" class="field title" placeholder="메모 제목" maxlength="200" autocomplete="off">
+    <p id="mInfo" class="muted small"></p>
+    <textarea id="mBody" class="field memo-body" placeholder="자유롭게 적어 보세요"></textarea>
+    <div id="memoActions" class="sheet-actions">
+      <button id="memoDelete" class="btn danger">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- 설정 -->
+<div id="sheetMenu" class="sheet" hidden>
+  <div class="sheet-card">
+    <div class="sheet-head">
+      <button class="icon-btn" data-close>✕</button>
+      <h2>설정</h2>
+      <span></span>
+    </div>
+    <p id="who" class="muted"></p>
+    <div id="calSettings" class="app-only">
+      <h3>구글 캘린더 연동 (이 휴대폰)</h3>
+      <p class="muted small">마감 기한이 있는 할 일을 휴대폰에 로그인된 구글 계정의 캘린더에 등록해요. 웹에서 추가한 할 일도 앱을 열면 등록돼요.</p>
+      <button id="btnCalPerm" class="btn" hidden>캘린더 권한 허용하기</button>
+      <select id="calSelect" class="field"></select>
+      <button id="btnCalSync" class="btn">지금 다시 맞추기</button>
+      <p id="calMsg" class="muted small"></p>
+    </div>
+    <div class="web-only">
+      <h3>휴대폰 앱</h3>
+      <p class="muted small">앱에서 쓰면 마감 기한 할 일이 구글 캘린더에 자동 등록돼요. 웹에서 추가한 일정도 앱이 열릴 때 등록돼요.</p>
+      <a class="btn" href="https://github.com/ddelza/todo-memo/releases/latest/download/todo-memo.apk">📱 안드로이드 앱(APK) 내려받기</a>
+    </div>
+    <p id="appVer" class="muted small"></p>
+    <button id="btnLogout" class="btn">로그아웃</button>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
