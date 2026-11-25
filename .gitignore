@@ -3,3 +3,4 @@ android/build/
 android/out/
 node_modules/
 .firebase/
+*-debug.log
